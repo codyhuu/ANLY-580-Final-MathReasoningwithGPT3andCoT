@@ -1,30 +1,35 @@
-import pandas as pd
 import streamlit as st
+import time
 
 """
 # Math Reasoning & Inference - By GPT-3 and Auto-Chain of Thoughts
 
-Solve math problems, e.g. 
+🔧 Made by Zheyuan Hu, Muwen You, Ruobing Yan, Dian Zhi
+
+📝 Solve math problems, e.g. jaiocjofampko
 """
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in data", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+with st.container():
+    col1, col2 = st.columns(2)
+    with col1:
+        engin = st.radio('Engine',("curie", "davinci"))
+    with col2:
+        method = st.radio('Method', ('Zero-shot', 'Few-shot', 'Few-shot with AUTO COT'))
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+with st.container():
+    access = st.text_area('You may need to add your OpenAI token here, if ours runs out.')
 
-    points_per_turn = total_points / num_turns
+with st.container():
+    inputs = st.text_area('Your math reasoning question here', placeholder = "Q: vhacuodjendan ofamcoemkanmvoea\nA: ")
+    if st.button('Run'):
+        with st.spinner('Working...'):
+        ## outputs = func(inputs, **arg)
+            time.sleep(1) ## replace this
+        st.write('outputs')
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+
+
+
+
