@@ -12,6 +12,7 @@ from sentence_transformers import SentenceTransformer
 📝 Solve math problems, e.g. jaiocjofampko
 """
 
+model = SentenceTransformer('all-mpnet-base-v2')
 
 with st.container():
     col1, col2 = st.columns(2)
@@ -28,15 +29,9 @@ with st.container():
     if st.button('Run'):
         with st.spinner('Working...'):
             # outputs = func(inputs, **arg)
-            time.sleep(1) ## replace this
-        st.write('outputs')
-
-model = SentenceTransformer('all-mpnet-base-v2')
-
-test = model.encode('a, b, c')
-
-st.write(str(test))
-
+            # time.sleep(1) ## replace this
+            test = model.encode('a, b, c')
+        st.write(str(test))
 
 
 
