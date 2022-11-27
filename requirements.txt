@@ -1,3 +1,6 @@
 pandas
 streamlit
 numpy
+openai
+json
+sentence_transformers
