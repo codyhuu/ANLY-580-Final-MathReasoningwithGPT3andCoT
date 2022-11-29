@@ -98,37 +98,36 @@ class GPT3ArithmeticReasoning():
     self.gpt3_engine = gpt3_engine
 
   def generate_gpt3_prompt(self, q, prompt_method):
+    e = self.sbert.encode(q)
     if prompt_method == '0-shot':
-      prompt = format_prompt(q, keywords=False)
+      self.prompt = format_prompt(q, keywords=False)
     elif prompt_method == '0-shot with keywords':
-      prompt = format_prompt(q, keywords=True)
+      self.prompt = format_prompt(q, keywords=True)
     elif prompt_method == 'Auto-COT representative question':
-      e = self.sbert.encode(q)
       label = get_embedding_most_repr_label(e, self.cluster_centers)
-      prompt = self.repr_auto_cot[label] + format_prompt(q, keywords=True)
+      self.prompt = self.repr_auto_cot[label] + format_prompt(q, keywords=True)
     elif prompt_method == 'Auto-COT nearest question':
       idx = get_embedding_nearest_idx(e, self.train_q_embeddings)
       prompt_train = format_prompt(self.train_q[idx], keywords=True)
       time.sleep(1)
-      _, completion_train = get_gpt3_response_text(prompt_train)
-      prompt = prompt_train + completion_train + '\n\n'+ format_prompt(q, keywords=True)
+      _, completion_train = get_gpt3_response_text(prompt_train, self.gpt3_engine)
+      self.prompt = prompt_train + completion_train + '\n\n'+ format_prompt(q, keywords=True)
     elif prompt_method == 'Manual-COT representative question':
       label = get_embedding_most_repr_label(e, self.cluster_centers)
       idx = self.most_repr_indices[label]
-      prompt = format_prompt(self.train_q[idx], keywords=False) + ' ' + self.train_a[idx] + '\n\n' + format_prompt(q, keywords=False)
+      self.prompt = format_prompt(self.train_q[idx], keywords=False) + ' ' + self.train_a[idx] + '\n\n' + format_prompt(q, keywords=False)
     elif prompt_method == 'Manual-COT nearest question':
       idx = get_embedding_nearest_idx(e, self.train_q_embeddings)
       prompt_train = format_prompt(self.train_q[idx], keywords=False)
       completion_train = self.train_a[idx]
-      prompt = prompt_train + ' ' + completion_train + '\n\n'+ format_prompt(q, keywords=False)
+      self.prompt = prompt_train + ' ' + completion_train + '\n\n'+ format_prompt(q, keywords=False)
     else:
       print('[-] Unavailable prompt method')
-      prompt = ''
-    return prompt
+      self.prompt = ''
+    return self.prompt
 
-  def get_gpt3_completion(self, q, prompt_method):
-    prompt = self.generate_gpt3_prompt(q, prompt_method)
-    if len(prompt) == '0':
+  def get_gpt3_completion(self):
+    if len(self.prompt) == 0:
       return 'error', ''
-    msg, completion = get_gpt3_response_text(prompt, self.gpt3_engine)
+    msg, completion = get_gpt3_response_text(self.prompt, self.gpt3_engine)
     return msg, completion

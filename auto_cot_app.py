@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from tqdm import tqdm
 from auto_cot_utils import *
+import re
 
 """
 # Math Reasoning & Inference - By GPT-3 and Auto-Chain of Thoughts
@@ -16,17 +17,12 @@ from auto_cot_utils import *
 """
 
 if 'options' not in st.session_state:
-    st.session_state['options'] = ""
-
-def sidebar_callback():
-    st.session_state['options'] = st.session_state['sidebar']
-def button1_callback():
-    st.session_state['options'] = "foo"
-def button2_callback():
-    st.session_state['options'] = "bar"
+    st.session_state['options'] = ''
+if 'results' not in st.session_state:
+    st.session_state['results'] = ''
 
 @st.cache
-def init_gpt3_qa_system(gpt3_engine):
+def init_variables():
 
     # load train question embeddings
     train_q_embeddings = np.load('train_q_embeddings.npy')
@@ -37,37 +33,44 @@ def init_gpt3_qa_system(gpt3_engine):
     # load train question embedding centroids
     cluster_centers = np.load('train_q_cluster_centers.npy')
 
-    # load train / test data
+    # load train data
     train_data = read_jsonl('train.jsonl')
-    test_data = read_jsonl('test.jsonl')
 
     # find the most representative training questions indices
     most_repr_indices = {}
     for c in range(K):
         most_repr_indices[c] = get_nearest_embeddings_idx(cluster_centers[c, :], train_q_embeddings)
-    
-    # generate auto COT of the most representative questions
+
+    # initialize the pretrained sentence bert model
+    sbert = SentenceTransformer('all-mpnet-base-v2')
+
+    return sbert, most_repr_indices, train_data, train_q_embeddings, cluster_centers
+
+def generate_repr_cot(gpt3_engine, train_data, most_repr_indices):
     repr_auto_cot = {}
     for key, value in tqdm(most_repr_indices.items()):
         q = get_qa_by_idx(value, train_data)[0]
         prompt = format_prompt(q, keywords=True)
         msg, completion = get_gpt3_response_text(prompt, engine=gpt3_engine)
         repr_auto_cot[key] = prompt + completion + '\n\n'
+    return repr_auto_cot
 
-    # initialize the pretrained sentence bert model
-    sbert = SentenceTransformer('all-mpnet-base-v2')
 
-    # initialize the gpt3 qa system
+def init_gpt3_qa_system(gpt3_engine, repr_auto_cot, sbert, most_repr_indices, train_data, train_q_embeddings, cluster_centers):
     model = GPT3ArithmeticReasoning(gpt3_engine, sbert, repr_auto_cot, most_repr_indices, train_data, train_q_embeddings, cluster_centers)
+    return model
 
-    return model, test_data
+@st.cache
+def get_test_examples():
+    test_data = read_jsonl('test.jsonl')
+    return test_data
 
 col1, col2 = st.columns(2)
 with col1:
-    engine = st.radio('Engine',('text-curie-001', 'text-davinci-003'))
+    engine = st.radio('Engine',('text-davinci-003', 'text-curie-001'))
 with col2:
     zs = st.checkbox('0-shot')
-    zsk = st.checkbox('0-shot w/ keywords')
+    zsk = st.checkbox('0-shot with keywords')
     acr = st.checkbox('Auto-COT most repr question')
     acn = st.checkbox('Auto-COT nearest question')
     mcr = st.checkbox('Manual-COT most repr question')
@@ -80,15 +83,38 @@ input_question = st.text_area('Your math reasoning question here', key= 'options
 def run_callback():
     with st.spinner('Working...'):
         set_openai_apikey(api_key)
-        model, test_data = init_gpt3_qa_system(engine)
-        st.session_state['options'] = model.generate_gpt3_prompt(input_question, prompt_method = '0-shot')
+        sbert, most_repr_indices, train_data, train_q_embeddings, cluster_centers = init_variables()
+        repr_auto_cot = generate_repr_cot(engine, train_data, most_repr_indices)
+        model = init_gpt3_qa_system(engine, repr_auto_cot, sbert, most_repr_indices, train_data, train_q_embeddings, cluster_centers)
+        prompt_methods = {
+            '0-shot': zs, 
+            '0-shot with keywords': zsk, 
+            'Auto-COT representative question': acr, 
+            'Auto-COT nearest question': acn, 
+            'Manual-COT representative question': mcr, 
+            'Manual-COT nearest question': mcn
+        }
+        results = ''
+        for key, val in prompt_methods.items():
+            if val:
+                prompt = model.generate_gpt3_prompt(input_question, prompt_method=key)
+                completion = model.get_gpt3_completion()
+                results += '=' * 80 + '\n\nPrompting Method: ' + key + '\n\nPrompt: ' \
+                    + prompt + '\n\nCompletion: ' + completion[1] + '\n\n'
+                results = re.sub(r'$', '', results)
+                results = re.sub(r'#', '', results)
+        st.session_state['results'] = results
 
 def button1_callback():
-    st.session_state['options'] = "q1 here"
+    test_data = get_test_examples()
+    st.session_state['options'] = test_data[3]['question']
 def button2_callback():
-    st.session_state['options'] = "q2 here"
+    test_data = get_test_examples()
+    st.session_state['options'] = test_data[1]['question']
 
 st.button('Run', on_click = run_callback)
 st.button('Example Question 1', on_click = button1_callback)
 st.button('Example Question 2', on_click = button2_callback)
 
+container = st.container()
+container.write(st.session_state['results'])
