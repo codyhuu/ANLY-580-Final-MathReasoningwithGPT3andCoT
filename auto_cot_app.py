@@ -122,4 +122,5 @@ with c3:
     st.button('Example Question 2', on_click = button2_callback)
 
 container = st.container()
+container.markdown('**Answer:**')
 container.markdown(st.session_state['results'])
