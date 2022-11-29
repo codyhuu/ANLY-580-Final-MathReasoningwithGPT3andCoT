@@ -77,7 +77,7 @@ with col2:
     mcr = st.checkbox('Manual-COT most repr question')
     mcn = st.checkbox('Manual-COT nearest question')
 
-api_key = st.text_input('Enter your OpenAI token here', type='password')
+api_key = st.text_input('Enter your OpenAI token here', type='password', value = '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')
 
 input_question = st.text_area('Your math reasoning question here', key= 'options')
 
@@ -100,7 +100,7 @@ def run_callback():
             if val:
                 prompt = model.generate_gpt3_prompt(input_question, prompt_method=key)
                 completion = model.get_gpt3_completion()
-                results += '=' * 80 + '\n\nPrompting Method: ' + key + '\n\nPrompt: ' \
+                results += '=' * 80 + '\n\n<\strong>Prompting Method: </strong>' + key + '\n\nPrompt: ' \
                     + prompt + '\n\nCompletion: ' + completion[1] + '\n\n'
                 results = re.sub(r'$', '', results)
                 results = re.sub(r'#', '', results)
