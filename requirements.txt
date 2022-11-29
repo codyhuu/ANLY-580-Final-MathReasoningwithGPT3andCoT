@@ -4,3 +4,5 @@ numpy
 pip
 openai
 sentence_transformers
+tqdm
+
