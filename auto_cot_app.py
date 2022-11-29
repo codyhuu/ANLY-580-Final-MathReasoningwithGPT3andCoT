@@ -100,8 +100,8 @@ def run_callback():
             if val:
                 prompt = model.generate_gpt3_prompt(input_question, prompt_method=key)
                 completion = model.get_gpt3_completion()
-                results += '=' * 80 + '\n\n<\strong>Prompting Method: </strong>' + key + '\n\nPrompt: ' \
-                    + prompt + '\n\nCompletion: ' + completion[1] + '\n\n'
+                results += '\n\n' + '=' * 80 + '\n\n**Prompting Method: **' + key + '\n\nPrompt: ' \
+                    + prompt + '\n\n**Completion: **' + completion[1] + '\n\n'
                 results = re.sub(r'$', '', results)
                 results = re.sub(r'#', '', results)
         st.session_state['results'] = results
@@ -122,4 +122,4 @@ with c3:
     st.button('Example Question 2', on_click = button2_callback)
 
 container = st.container()
-container.write(st.session_state['results'])
+container.markdown(st.session_state['results'])
