@@ -77,7 +77,7 @@ with col2:
     mcr = st.checkbox('Manual-COT most repr question')
     mcn = st.checkbox('Manual-COT nearest question')
 
-api_key = st.text_input('Enter your OpenAI token here', type='password', value = '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')
+api_key = st.text_input('Enter your OpenAI token here', type='password', value = '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')
 
 input_question = st.text_area('Your math reasoning question here', key= 'options')
 
