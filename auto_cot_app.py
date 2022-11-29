@@ -7,9 +7,8 @@ import numpy as np
 from tqdm import tqdm
 from auto_cot_utils import *
 import re
-import warnings
 
-warnings.filterwarnings('ignore')
+
 """
 # Math Reasoning & Inference - By GPT-3 and Auto-Chain of Thoughts
 
