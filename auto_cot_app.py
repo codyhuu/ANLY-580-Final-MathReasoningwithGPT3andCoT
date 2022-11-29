@@ -14,7 +14,7 @@ import re
 
 🔧 Made by Zheyuan Hu, Muwen You, Ruobing Yan, Dian Zhi
 
-📝 Solve math problems, e.g. jaiocjofampko
+📝 Solve math problems
 """
 
 if 'options' not in st.session_state:
