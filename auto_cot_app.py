@@ -77,7 +77,7 @@ with col2:
     mcr = st.checkbox('Manual-COT most repr question')
     mcn = st.checkbox('Manual-COT nearest question')
 
-api_key = st.text_input('Enter your OpenAI token here', type='password', value = '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')
+api_key = st.text_input('Enter your OpenAI token here', type='password')
 
 input_question = st.text_area('Your math reasoning question here', key= 'options')
 
@@ -113,9 +113,13 @@ def button2_callback():
     test_data = get_test_examples()
     st.session_state['options'] = test_data[1]['question']
 
-st.button('Run', on_click = run_callback)
-st.button('Example Question 1', on_click = button1_callback)
-st.button('Example Question 2', on_click = button2_callback)
+c1, c2, c3 = st.columns(3)
+with c1:
+    st.button('Run', on_click = run_callback)
+with c2:
+    st.button('Example Question 1', on_click = button1_callback)
+with c3:
+    st.button('Example Question 2', on_click = button2_callback)
 
 container = st.container()
 container.write(st.session_state['results'])
