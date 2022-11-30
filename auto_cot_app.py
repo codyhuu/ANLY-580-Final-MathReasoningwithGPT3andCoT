@@ -22,7 +22,7 @@ if 'options' not in st.session_state:
 if 'results' not in st.session_state:
     st.session_state['results'] = ''
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def init_variables():
 
     # load train question embeddings
@@ -61,7 +61,7 @@ def init_gpt3_qa_system(gpt3_engine, repr_auto_cot, sbert, most_repr_indices, tr
     model = GPT3ArithmeticReasoning(gpt3_engine, sbert, repr_auto_cot, most_repr_indices, train_data, train_q_embeddings, cluster_centers)
     return model
 
-@st.cache
+@st.cache(allow_output_mutation=True)
 def get_test_examples():
     test_data = read_jsonl('test.jsonl')
     return test_data
