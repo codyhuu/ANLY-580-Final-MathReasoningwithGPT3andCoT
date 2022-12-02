@@ -1,4 +1,4 @@
-# auto_cot_qa_sys
+# Arithmetic reasoning System Using GPT-3 with chain-of-Thought
 
 Math Reasoning and Inference Application using GPT3 and Auto CoT
 
